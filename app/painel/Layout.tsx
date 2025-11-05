@@ -4,8 +4,8 @@ import {
   SidebarProvider,
   SidebarTrigger
 } from "@/components/ui/sidebar"
-import {UserMenu} from "@/components/user-menu"
-import { auth } from "@delivery/auth"
+import UserMenu from "@/components/user-menu"
+import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
