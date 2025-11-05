@@ -1,46 +1,78 @@
-'use client';
+'use client'
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Plus } from "lucide-react";
+  DialogTrigger
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { useState, useTransition } from 'react'
+import { criarCategoria } from '../actions'
+import { toast } from 'sonner'
 
-export function AddCategorias() {
+export default function AddCategorias() {
+  const [open, setOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  async function handleSubmit(formData: FormData) {
+    startTransition(async () => {
+      const result = await criarCategoria(formData)
+
+      if (result.error) {
+        toast.error(result.error)
+      } else {
+        toast.success('Categoria criada com sucesso!')
+        setOpen(false)
+      }
+    })
+  }
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Adicionar Categoria
-        </Button>
+        <Button>Adicionar Categoria</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Adicionar Nova Categoria</DialogTitle>
+          <DialogTitle>Adicionar Categoria</DialogTitle>
           <DialogDescription>
-            Preencha os dados da nova categoria
+            Crie uma nova categoria para organizar seus produtos.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Nome
-            </Label>
-            <Input id="name" className="col-span-3" />
+        <form action={handleSubmit}>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="nome">Nome da Categoria</Label>
+              <Input
+                id="nome"
+                name="nome"
+                placeholder="Ex: Pizzas, Bebidas, Sobremesas..."
+                required
+                disabled={isPending}
+              />
+            </div>
           </div>
-          <div className="flex justify-end">
-            <Button type="submit">Salvar</Button>
-          </div>
-        </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isPending}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Criando...' : 'Criar Categoria'}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
