@@ -1,3 +1,5 @@
+'use client'
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,24 +9,56 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { User } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { authClient } from "@/lib/auth-client"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
 
-export function UserMenu() {
+export default function UserMenu() {
+  const router = useRouter()
+  const { data: session, isPending } = authClient.useSession()
+
+  if (isPending) {
+    return <Skeleton className="h-9 w-24" />
+  }
+
+  if (!session) {
+    return (
+      <Button variant="outline" asChild>
+        <Link href="/login">Entrar</Link>
+      </Button>
+    )
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <User className="h-5 w-5" />
-          <span className="sr-only">User menu</span>
-        </Button>
+        <Button variant="outline">{session.user.name}</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>Profile</DropdownMenuItem>
-        <DropdownMenuItem>Settings</DropdownMenuItem>
+        <DropdownMenuItem className="text-sm text-muted-foreground">
+          {session.user.email}
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>Logout</DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Button
+            variant="destructive"
+            className="w-full"
+            onClick={() => {
+              authClient.signOut({
+                fetchOptions: {
+                  onSuccess: () => {
+                    router.push("/login")
+                  },
+                },
+              })
+            }}
+          >
+            Sair
+          </Button>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
